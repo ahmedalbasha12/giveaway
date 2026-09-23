@@ -10,6 +10,13 @@ import threading
 from hydrogram import Client, idle
 from hydrogram.raw.functions.messages import RequestWebView
 
+# --- الإصلاح الجذري لمشكلة الـ Event Loop في إصدارات بايثون الحديثة ---
+try:
+    loop = asyncio.get_event_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
 # ================= بيانات القناة والحساب =================
 CHANNEL_ID = "@jjjjjjjjjjaaaaaaallll"
 API_ID = 33670321
@@ -24,6 +31,7 @@ FILE_NAME = "seen_giveaways.txt"
 
 CURRENT_TOKEN = None
 
+# الآن بايثون سيتعرف على الـ loop بدون مشاكل
 app = Client("userbot", api_id=API_ID, api_hash=API_HASH, session_string=SESSION_STRING, in_memory=True)
 
 # --- استخراج رابط الـ WebApp وتوليد initData ---
@@ -181,7 +189,6 @@ async def check_giveaways_loop():
 # --- سيرفر Koyeb الوهمي ---
 def run_server():
     try:
-        # قراءة البورت من Koyeb أو استخدام 8000
         port = int(os.environ.get("PORT", 8000))
         handler = http.server.SimpleHTTPRequestHandler
         with socketserver.TCPServer(("", port), handler) as httpd:
@@ -209,11 +216,5 @@ if __name__ == '__main__':
     # تشغيل خادم الويب الوهمي لتجاوز فحص Koyeb
     threading.Thread(target=run_server, daemon=True).start()
     
-    # إصلاح تعارضات Event Loop في الاستضافات
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
+    # تشغيل الدالة الرئيسية باستخدام الـ loop الذي تم إنشاؤه في البداية
     loop.run_until_complete(main())
