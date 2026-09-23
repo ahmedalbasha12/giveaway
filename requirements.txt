@@ -1,0 +1,4 @@
+requests
+hydrogram
+tgcrypto
+
