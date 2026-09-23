@@ -10,13 +10,6 @@ import threading
 from hydrogram import Client, idle
 from hydrogram.raw.functions.messages import RequestWebView
 
-# --- الإصلاح الجذري لمشكلة الـ Event Loop في إصدارات بايثون الحديثة ---
-try:
-    loop = asyncio.get_event_loop()
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
 # ================= بيانات القناة والحساب =================
 CHANNEL_ID = "@jjjjjjjjjjaaaaaaallll"
 API_ID = 33670321
@@ -30,9 +23,7 @@ WEBAPP_URL = "https://cdn.tgmrkt.io/"
 FILE_NAME = "seen_giveaways.txt"
 
 CURRENT_TOKEN = None
-
-# الآن بايثون سيتعرف على الـ loop بدون مشاكل
-app = Client("userbot", api_id=API_ID, api_hash=API_HASH, session_string=SESSION_STRING, in_memory=True)
+app = None  # سيتم تعريفه لاحقاً داخل دورة التشغيل لتجنب أخطاء بايثون 3.14
 
 # --- استخراج رابط الـ WebApp وتوليد initData ---
 async def get_telegram_init_data():
@@ -199,11 +190,15 @@ def run_server():
 
 # ================= نقطة البداية =================
 async def main():
+    global app
+    # يتم تعريف الحساب هنا بشكل آمن تماماً لتفادي أخطاء بايثون 3.14
+    app = Client("userbot", api_id=API_ID, api_hash=API_HASH, session_string=SESSION_STRING, in_memory=True)
+    
     print("🚀 جاري تشغيل النظام على السيرفر...")
     await app.start()
     
     try:
-        await app.send_message(CHANNEL_ID, "🚀 الحساب يعمل الآن على Koyeb لجمع الجوائز ونشرها 24/7!")
+        await app.send_message(CHANNEL_ID, "🚀 الحساب يعمل الآن على استضافة كويب 24/7 بدون أخطاء!")
         print("✅ تم ربط الحساب بالقناة بنجاح.")
     except Exception as e:
         print(f"⚠️ خطأ: تأكد أن حسابك لديه صلاحية النشر في القناة. التفاصيل: {e}")
@@ -216,5 +211,6 @@ if __name__ == '__main__':
     # تشغيل خادم الويب الوهمي لتجاوز فحص Koyeb
     threading.Thread(target=run_server, daemon=True).start()
     
-    # تشغيل الدالة الرئيسية باستخدام الـ loop الذي تم إنشاؤه في البداية
-    loop.run_until_complete(main())
+    # التشغيل الآمن والقياسي لبايثون
+    asyncio.run(main())
+
